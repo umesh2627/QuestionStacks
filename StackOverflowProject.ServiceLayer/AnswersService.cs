@@ -1,0 +1,90 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using StackOverflowProject.DomainModel;
+using StackOverflowProject.ViewModel;
+using StackOverflowProject.Repository;
+using StackOverflowProject.ServiceLayer;
+using AutoMapper;
+using AutoMapper.Configuration;
+using System.Data.Entity.Migrations.Model;
+
+
+namespace StackOverflowProject.ServiceLayer
+{
+    public interface IAnswersService
+    {
+        void AddAnswer(NewAnswerViewModel avm);
+        void UpdateAnswer(EditAnswerViewModel avm);
+
+        void UpdateAnswerVotesCount(int aid,int uid,int value);
+
+        void DeleteAnswer(int aid);
+
+        List<AnswerViewModel> GetAnswersByQuestionID(int qid);
+
+        AnswerViewModel GetAnswerByAnswerID(int AnswerID);
+    }
+    public class AnswersService:IAnswersService
+    {
+        IAnswersRepository ar;
+        public AnswersService()
+        {
+            ar = new AnswersRepository();
+        }
+
+        public void AddAnswer(NewAnswerViewModel avm)
+        {
+            var config = new MapperConfiguration(cfg => { cfg.CreateMap<NewAnswerViewModel, Answer>(); cfg.IgnoreUnmapped(); });
+            IMapper mapper = config.CreateMapper();
+            Answer a = Mapper.Map<NewAnswerViewModel, Answer>(avm);
+            ar.AddAnswer(a);
+        }
+
+        public void UpdateAnswer(EditAnswerViewModel avm)
+        {
+            var config = new MapperConfiguration(cfg => { cfg.CreateMap<EditAnswerViewModel, Answer>(); cfg.IgnoreUnmapped(); });
+            IMapper mapper = config.CreateMapper();
+            Answer a = Mapper.Map<EditAnswerViewModel, Answer>(avm);
+            ar.UpdateAnswer(a);
+        }
+
+        public void UpdateAnswerVotesCount(int aid,int uid, int value)
+        {
+            ar.UpdateAnswerVotesCount(aid,uid, value);
+        }
+
+        public void DeleteAnswer(int aid)
+        {
+            ar.DeleteAnswer(aid);
+        }
+
+        public List<AnswerViewModel> GetAnswersByQuestionID(int qid)
+        {
+            List<Answer> c = ar.GetAnswersByQuestionID(qid);
+            var config = new MapperConfiguration(cfg => { cfg.CreateMap<Answer, AnswerViewModel>(); cfg.IgnoreUnmapped(); });
+            IMapper mapper = config.CreateMapper();
+            List<AnswerViewModel> avm = mapper.Map<List<Answer>, List<AnswerViewModel>>(c);
+            return avm;
+        }
+
+        public AnswerViewModel GetAnswerByAnswerID(int AnswerID)
+        {
+            Answer a = ar.GetAnswersByAnswerID(AnswerID).FirstOrDefault();
+            AnswerViewModel avm = null;
+            if (a != null)
+            {
+
+                var config = new MapperConfiguration(cfg => { cfg.CreateMap<Answer, AnswerViewModel>(); cfg.IgnoreUnmapped(); });
+                IMapper mapper = config.CreateMapper();
+                avm = mapper.Map<Answer, AnswerViewModel>(a);
+
+            }
+            return avm;
+        }
+
+
+    }
+}
